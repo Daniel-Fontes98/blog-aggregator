@@ -1,7 +1,6 @@
 package main
 
 import (
-	"blog-aggregator/internal/auth"
 	"blog-aggregator/internal/database"
 	"encoding/json"
 	"net/http"
@@ -19,7 +18,7 @@ func (cfg *apiConfig) handler_users_post(w http.ResponseWriter, r *http.Request)
 	params := &reqParameters{}
 	err := decoder.Decode(params)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -37,17 +36,6 @@ func (cfg *apiConfig) handler_users_post(w http.ResponseWriter, r *http.Request)
 	respondWithJSON(w, http.StatusCreated, databaseUserToUser(user))
 }
 
-func (cfg *apiConfig) handler_users_get(w http.ResponseWriter, r *http.Request) {
-	apiKey, err := auth.GetApiKey(r.Header)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-	}
-
-	user, err := cfg.DB.GetUserByApiKey(r.Context(), apiKey)
-	if err != nil {
-		respondWithError(w, http.StatusNotFound, err.Error())
-		return
-	}
-
-	respondWithJSON(w, http.StatusOK, databaseUserToUser(user))
+func (cfg *apiConfig) handler_users_get(w http.ResponseWriter, r *http.Request, u database.User) {
+	respondWithJSON(w, http.StatusOK, databaseUserToUser(u))
 }
