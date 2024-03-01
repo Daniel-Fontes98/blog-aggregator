@@ -33,6 +33,7 @@ type Feed struct {
 	Name string `json:"name"`
 	Url string `json:"url"`
 	UserId uuid.UUID `json:"user_id"`
+	LastFetchedAt *time.Time `json:"last_fetched_at"`
 }
 
 func databaseFeedToFeed(feed database.Feed) Feed {
@@ -43,6 +44,7 @@ func databaseFeedToFeed(feed database.Feed) Feed {
 		Name: feed.Name,
 		Url: feed.Url,
 		UserId: feed.ID,
+		LastFetchedAt: &feed.LastFetchedAt.Time,
 	}
 }
 

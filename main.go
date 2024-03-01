@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -35,7 +36,6 @@ func main() {
 		DB: dbQueries,
 	}
 
-
 	r := chi.NewRouter()
 	r.Use(middlewareCors)
 
@@ -58,6 +58,10 @@ func main() {
 		Addr: ":" + port,
 		Handler: r,
 	}
+
+	const collectionConcurrency = 10
+	const collectionInterval = time.Minute
+	go startScraping(dbQueries, collectionConcurrency, collectionInterval)
 
 	fmt.Printf("Server listening on port %v...\n", port)
 	err = srv.ListenAndServe()
