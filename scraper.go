@@ -3,11 +3,14 @@ package main
 import (
 	"blog-aggregator/internal/database"
 	"context"
+	"database/sql"
 	"encoding/xml"
 	"log"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Rss struct {
@@ -96,6 +99,24 @@ func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
 
 	for _, item := range feedData.Channel.Item {
 		log.Println("Found post", item.Title)
+		pub, err := time.Parse(time.RFC1123, item.PubDate)
+		if err != nil {
+			continue
+		}
+
+		_, err = db.CreatePost(context.Background(), database.CreatePostParams{
+			ID: uuid.New(),
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
+			Title: item.Title,
+			Url: item.Link,
+			Description: sql.NullString{String: item.Description, Valid: true},
+			PublishedAt: pub,
+			FeedID: feed.ID,
+		})
+		if err != nil {
+			continue
+		}
 	}
 	log.Printf("Feed %s collected, %v posts found", feed.Name, len(feedData.Channel.Item))
 }
